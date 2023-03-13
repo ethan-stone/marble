@@ -12,5 +12,5 @@ const connection = connect({
 });
 
 export const db = drizzle(connection, {
-  logger: env.NODE_ENV === "production",
+  logger: env.NODE_ENV !== "production",
 });

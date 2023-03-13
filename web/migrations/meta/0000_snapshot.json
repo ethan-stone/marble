@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "6d0e5228-db3e-4f4a-8b02-f5a4fb38773f",
+  "id": "c4dd80cc-f224-49d0-a66b-ee397511205c",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "ledgers": {
@@ -14,11 +14,32 @@
           "notNull": true,
           "autoincrement": false
         },
+        "ownerId": {
+          "name": "ownerId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp(3)",
+          "primaryKey": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
@@ -29,40 +50,32 @@
     "userLedgerJunction": {
       "name": "userLedgerJunction",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "varchar(36)",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
         "ledgerId": {
           "name": "ledgerId",
           "type": "varchar(36)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "userId": {
           "name": "userId",
           "type": "varchar(36)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         }
       },
-      "indexes": {
-        "userId_ledgerId_idx": {
-          "name": "userId_ledgerId_idx",
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "userLedgerJunction_userId_ledgerId": {
+          "name": "userLedgerJunction_userId_ledgerId",
           "columns": [
             "userId",
             "ledgerId"
-          ],
-          "isUnique": true
+          ]
         }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {}
+      }
     }
   },
   "schemas": {},

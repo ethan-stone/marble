@@ -1,21 +1,35 @@
-import { mysqlTable, text, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import {
+  type InferModel,
+  mysqlTable,
+  text,
+  varchar,
+  primaryKey,
+  timestamp,
+} from "drizzle-orm/mysql-core";
 
-export const ledger = mysqlTable("ledgers", {
+export const ledgers = mysqlTable("ledgers", {
   id: varchar("id", { length: 36 }).primaryKey(),
-  name: text("name"),
+  ownerId: varchar("ownerId", { length: 36 }).notNull(),
+  name: text("name").notNull(),
+  createdAt: timestamp("createdAt", { fsp: 3 }).notNull(),
+  updatedAt: timestamp("updatedAt", { fsp: 3 }).notNull(),
 });
+
+export type Ledger = InferModel<typeof ledgers>;
+export type NewLedger = InferModel<typeof ledgers, "insert">;
 
 export const userLedgerJunction = mysqlTable(
   "userLedgerJunction",
   {
-    id: varchar("id", { length: 36 }).primaryKey(),
-    ledgerId: varchar("ledgerId", { length: 36 }),
-    userId: varchar("userId", { length: 36 }),
+    ledgerId: varchar("ledgerId", { length: 36 }).notNull(),
+    userId: varchar("userId", { length: 36 }).notNull(),
   },
   (userLedgerJunction) => ({
-    userIdLedgerIdIdx: uniqueIndex("userId_ledgerId_idx").on(
+    userIdLedgerIdCPK: primaryKey(
       userLedgerJunction.userId,
       userLedgerJunction.ledgerId
     ),
   })
 );
+
+export type UserLedgerJunction = InferModel<typeof userLedgerJunction>;
