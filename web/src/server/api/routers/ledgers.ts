@@ -4,6 +4,7 @@ import { newLedger } from "@/server/api/useCases/new-ledger";
 import { insertLedger } from "@/server/db/ledger";
 import { insertUserLedgerJunction } from "@/server/db/user-ledger-junction";
 import { listLedgers } from "@/server/api/useCases/list-ledgers";
+import { getLedger } from "@/server/api/useCases/get-ledger";
 
 export const ledgersRouter = createTRPCRouter({
   newLedger: protectedProcedure
@@ -33,6 +34,19 @@ export const ledgersRouter = createTRPCRouter({
         userId: ctx.auth.userId,
         limit: input.limit,
         startingAfter: input.cursor,
+      });
+    }),
+
+  getLedger: protectedProcedure
+    .input(
+      z.object({
+        ledgerId: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      return getLedger({
+        ledgerId: input.ledgerId,
+        userId: ctx.auth.userId,
       });
     }),
 });

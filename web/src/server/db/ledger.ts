@@ -103,3 +103,27 @@ export const listLedgersByUser: ListLedgersByUser = async (args) => {
       }) as Ledger[],
   };
 };
+
+export type GetLedgerByUser = (args: {
+  userId: string;
+  ledgerId: string;
+}) => Promise<Ledger | null>;
+
+export const getLedgerByUser: GetLedgerByUser = async (args) => {
+  const result = (
+    await db
+      .select()
+      .from(userLedgerJunction)
+      .leftJoin(ledgers, eq(userLedgerJunction.ledgerId, ledgers.id))
+      .where(
+        and(
+          eq(userLedgerJunction.userId, args.userId),
+          eq(userLedgerJunction.ledgerId, args.ledgerId)
+        )
+      )
+  )[0];
+
+  if (!result?.ledgers) return null;
+
+  return result.ledgers;
+};

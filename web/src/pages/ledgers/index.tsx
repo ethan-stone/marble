@@ -3,6 +3,7 @@ import { api } from "@/utils/api";
 import { useAuth } from "@clerk/nextjs";
 import { type NextPage } from "next";
 import Head from "next/head";
+import Link from "next/link";
 import { type RefCallback, useCallback, useRef, useState } from "react";
 
 const Ledgers: NextPage = () => {
@@ -31,7 +32,7 @@ const Ledgers: NextPage = () => {
 
   const observer = useRef<IntersectionObserver | null>(null);
 
-  const lastLedgerElementRef = useCallback<RefCallback<HTMLButtonElement>>(
+  const lastLedgerElementRef = useCallback<RefCallback<HTMLDivElement>>(
     (node) => {
       if (isLedgersLoading) return;
       if (observer.current) observer.current.disconnect();
@@ -63,7 +64,7 @@ const Ledgers: NextPage = () => {
                 value={ledgerName}
               />
               <button
-                className="rounded border border-neutral-900 p-2"
+                className="mt-4 rounded border border-neutral-900 p-2"
                 onClick={() => newLedger({ name: ledgerName })}
               >
                 New Ledger
@@ -83,19 +84,23 @@ const Ledgers: NextPage = () => {
 
                   if (arr.length === idx + 1) {
                     return (
-                      <button
+                      <Link
                         key={ledger.id}
-                        ref={lastLedgerElementRef}
+                        href={`/ledgers/${ledger.id}`}
                         className={className}
                       >
-                        {ledger.id}
-                      </button>
+                        <div ref={lastLedgerElementRef}>{ledger.name}</div>
+                      </Link>
                     );
                   }
                   return (
-                    <button key={ledger.id} className={className}>
-                      {ledger.id}
-                    </button>
+                    <Link
+                      key={ledger.id}
+                      href={`/ledgers/${ledger.id}`}
+                      className={className}
+                    >
+                      <div>{ledger.name}</div>
+                    </Link>
                   );
                 })
             )}
