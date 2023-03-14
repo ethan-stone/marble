@@ -7,8 +7,5 @@ type Args = {
 };
 
 export async function listLedgers(args: Args) {
-  console.log(args);
-  const ledgers = await listLedgersByUser(args);
-  console.log(ledgers);
-  return ledgers;
+  return listLedgersByUser(args);
 }
