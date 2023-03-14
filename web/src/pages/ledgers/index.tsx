@@ -16,7 +16,7 @@ const Ledgers: NextPage = () => {
     fetchNextPage,
   } = api.ledgers.listLedgers.useInfiniteQuery(
     {
-      limit: 10,
+      limit: 5,
     },
     {
       enabled: !!isSignedIn,

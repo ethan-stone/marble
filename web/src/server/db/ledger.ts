@@ -49,7 +49,18 @@ export const listLedgersByUser: ListLedgersByUser = async (args) => {
       .select()
       .from(userLedgerJunction)
       .leftJoin(ledgers, eq(userLedgerJunction.ledgerId, ledgers.id))
-      .where(lt(ledgers.updatedAt, startingAfterItem.updatedAt))
+      .where(
+        and(
+          eq(userLedgerJunction.userId, args.userId),
+          or(
+            lt(ledgers.updatedAt, startingAfterItem.updatedAt),
+            and(
+              eq(ledgers.updatedAt, startingAfterItem.updatedAt),
+              gt(ledgers.id, startingAfterItem.id)
+            )
+          )
+        )
+      )
       .orderBy(desc(ledgers.updatedAt), asc(ledgers.id))
       .limit(args.limit + 1);
 
@@ -73,6 +84,7 @@ export const listLedgersByUser: ListLedgersByUser = async (args) => {
     .select()
     .from(userLedgerJunction)
     .leftJoin(ledgers, eq(userLedgerJunction.ledgerId, ledgers.id))
+    .where(eq(userLedgerJunction.userId, args.userId))
     .orderBy(desc(ledgers.updatedAt), asc(ledgers.id))
     .limit(args.limit + 1);
 

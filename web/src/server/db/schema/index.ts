@@ -4,15 +4,15 @@ import {
   text,
   varchar,
   primaryKey,
-  timestamp,
+  datetime,
 } from "drizzle-orm/mysql-core";
 
 export const ledgers = mysqlTable("ledgers", {
   id: varchar("id", { length: 36 }).primaryKey(),
   ownerId: varchar("ownerId", { length: 36 }).notNull(),
   name: text("name").notNull(),
-  createdAt: timestamp("createdAt", { fsp: 3 }).notNull(),
-  updatedAt: timestamp("updatedAt", { fsp: 3 }).notNull(),
+  createdAt: datetime("createdAt", { mode: "string", fsp: 3 }).notNull(),
+  updatedAt: datetime("updatedAt", { mode: "string", fsp: 3 }).notNull(),
 });
 
 export type Ledger = InferModel<typeof ledgers>;

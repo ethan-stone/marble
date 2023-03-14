@@ -16,8 +16,8 @@ export async function newLedger(args: Args, ctx: Ctx) {
   const ledger = await ctx.insertLedger({
     name: args.name,
     ownerId: args.userId,
-    createdAt: now,
-    updatedAt: now,
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
   });
 
   await ctx.insertUserLedgerJunction({
