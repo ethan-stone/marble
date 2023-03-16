@@ -1,9 +1,74 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "c4dd80cc-f224-49d0-a66b-ee397511205c",
+  "id": "9c01794f-bace-4dd2-9450-ca9af598ab1d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "accounts": {
+      "name": "accounts",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "enum('3rdParty','user')",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
+    "journals": {
+      "name": "journals",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "varchar(36)",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "creatorId": {
+          "name": "creatorId",
+          "type": "varchar(36)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "datetime(3)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {}
+    },
     "ledgers": {
       "name": "ledgers",
       "columns": {
@@ -30,14 +95,14 @@
         },
         "createdAt": {
           "name": "createdAt",
-          "type": "timestamp(3)",
+          "type": "datetime(3)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "updatedAt": {
           "name": "updatedAt",
-          "type": "timestamp(3)",
+          "type": "datetime(3)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false

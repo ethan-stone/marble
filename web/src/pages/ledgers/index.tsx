@@ -49,7 +49,7 @@ const Ledgers: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Phractal</title>
+        <title>Marble</title>
         <meta name="description" content="Simple ledgers for anyone" />
         <link rel="icon" href="/favicon.ico" />
       </Head>

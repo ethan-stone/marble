@@ -17,7 +17,7 @@ const Ledger: NextPage = () => {
 
   console.log(data);
 
-  return <div> Hi</div>;
+  return <div>Hi</div>;
 };
 
 export default Ledger;
