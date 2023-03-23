@@ -11,12 +11,12 @@ import {
 /**
  * Ledgers are an abstract organization of accounts transactions
  */
-export const ledgers = mysqlTable("ledgers", {
+export const ledgers = mysqlTable("ledger", {
   id: varchar("id", { length: 36 }).primaryKey(),
-  ownerId: varchar("ownerId", { length: 36 }).notNull(),
+  ownerId: varchar("owner_id", { length: 36 }).notNull(),
   name: text("name").notNull(),
-  createdAt: datetime("createdAt", { mode: "string", fsp: 3 }).notNull(),
-  updatedAt: datetime("updatedAt", { mode: "string", fsp: 3 }).notNull(),
+  createdAt: datetime("created_at", { mode: "string", fsp: 3 }).notNull(),
+  updatedAt: datetime("updated_at", { mode: "string", fsp: 3 }).notNull(),
 });
 
 export type Ledger = InferModel<typeof ledgers>;
@@ -25,12 +25,21 @@ export type NewLedger = InferModel<typeof ledgers, "insert">;
 /**
  * Journals are a list of transactions between two or more accounts
  */
-export const journals = mysqlTable("journals", {
+export const journals = mysqlTable("journal", {
   id: varchar("id", { length: 36 }).primaryKey(),
-  ledgerId: varchar("ledgerId", { length: 36 }), // the ledger this journal is a part of
+  ledgerId: varchar("ledger_id", { length: 36 }), // the ledger this journal is a part of
   name: text("name").notNull(),
-  createdAt: datetime("createdAt", { mode: "string", fsp: 3 }).notNull(),
-  updatedAt: datetime("updatedAt", { mode: "string", fsp: 3 }).notNull(),
+  createdAt: datetime("created_at", { mode: "string", fsp: 3 }).notNull(),
+  updatedAt: datetime("updated_at", { mode: "string", fsp: 3 }).notNull(),
+});
+
+/**
+ * Journal Entries are a specific entry in a journal
+ */
+
+export const journalEntry = mysqlTable("journal_entry", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  creatorId: varchar("creator_id", { length: 36 }),
 });
 
 /**
@@ -39,7 +48,7 @@ export const journals = mysqlTable("journals", {
  * owe you their portion, you and the other person are users, and Five Guys is
  * the 3rdparty
  */
-export const accounts = mysqlTable("accounts", {
+export const accounts = mysqlTable("account", {
   id: varchar("id", { length: 36 }).primaryKey(),
   type: mysqlEnum("type", ["3rdparty", "user"]),
 });
@@ -48,10 +57,10 @@ export const accounts = mysqlTable("accounts", {
  * users and ledgers is a many to many relationship so this is a jump table
  */
 export const userLedgerJunction = mysqlTable(
-  "userLedgerJunction",
+  "user_ledger_junction",
   {
-    ledgerId: varchar("ledgerId", { length: 36 }).notNull(),
-    userId: varchar("userId", { length: 36 }).notNull(),
+    ledgerId: varchar("ledger_id", { length: 36 }).notNull(),
+    userId: varchar("user_id", { length: 36 }).notNull(),
   },
   (userLedgerJunction) => {
     return {
