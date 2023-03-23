@@ -8,7 +8,7 @@
     "lint": "next lint",
     "start": "next start",
     "db:generate": "drizzle-kit generate:mysql",
-    "db:push": "node migrate.mjs"
+    "db:push": "drizzle-kit push:mysql"
   },
   "dependencies": {
     "@clerk/nextjs": "^4.11.7",
@@ -19,7 +19,7 @@
     "@trpc/next": "^10.9.0",
     "@trpc/react-query": "^10.9.0",
     "@trpc/server": "^10.9.0",
-    "drizzle-orm": "^0.22.0",
+    "drizzle-orm": "^0.22.0-d52ce91",
     "mysql2": "^2.3.3",
     "next": "^13.2.1",
     "react": "18.2.0",
@@ -38,7 +38,7 @@
     "@typescript-eslint/parser": "^5.53.0",
     "autoprefixer": "^10.4.7",
     "dotenv": "^16.0.3",
-    "drizzle-kit": "^0.17.0",
+    "drizzle-kit": "^0.17.0-0cf3fe9",
     "eslint": "^8.34.0",
     "eslint-config-next": "^13.2.1",
     "postcss": "^8.4.14",
