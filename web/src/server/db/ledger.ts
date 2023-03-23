@@ -1,6 +1,6 @@
 import { db } from "@/server/db/client";
 import {
-  ledgers,
+  ledger,
   type NewLedger,
   type Ledger,
   userLedgerJunction,
@@ -13,16 +13,19 @@ export type InsertLedgerFn = (args: Omit<NewLedger, "id">) => Promise<Ledger>;
 export const insertLedger: InsertLedgerFn = async (args) => {
   const id = uid();
 
-  await db.insert(ledgers).values({
+  await db.insert(ledger).values({
     ...args,
     id,
   });
 
-  const ledger = (await db.select().from(ledgers).where(eq(ledgers.id, id)))[0];
+  const newLedger = (
+    await db.select().from(ledger).where(eq(ledger.id, id))
+  )[0];
 
-  if (!ledger) throw new Error(`Unexpected error retrieving inserted ledger`);
+  if (!newLedger)
+    throw new Error(`Unexpected error retrieving inserted ledger`);
 
-  return ledger;
+  return newLedger;
 };
 
 export type ListLedgersByUser = (args: {
@@ -37,7 +40,7 @@ export type ListLedgersByUser = (args: {
 export const listLedgersByUser: ListLedgersByUser = async (args) => {
   if (args.startingAfter) {
     const startingAfterItem = (
-      await db.select().from(ledgers).where(eq(ledgers.id, args.startingAfter))
+      await db.select().from(ledger).where(eq(ledger.id, args.startingAfter))
     )[0];
 
     if (!startingAfterItem)
@@ -48,20 +51,20 @@ export const listLedgersByUser: ListLedgersByUser = async (args) => {
     const results = await db
       .select()
       .from(userLedgerJunction)
-      .leftJoin(ledgers, eq(userLedgerJunction.ledgerId, ledgers.id))
+      .leftJoin(ledger, eq(userLedgerJunction.ledgerId, ledger.id))
       .where(
         and(
           eq(userLedgerJunction.userId, args.userId),
           or(
-            lt(ledgers.updatedAt, startingAfterItem.updatedAt),
+            lt(ledger.updatedAt, startingAfterItem.updatedAt),
             and(
-              eq(ledgers.updatedAt, startingAfterItem.updatedAt),
-              gt(ledgers.id, startingAfterItem.id)
+              eq(ledger.updatedAt, startingAfterItem.updatedAt),
+              gt(ledger.id, startingAfterItem.id)
             )
           )
         )
       )
-      .orderBy(desc(ledgers.updatedAt), asc(ledgers.id))
+      .orderBy(desc(ledger.updatedAt), asc(ledger.id))
       .limit(args.limit + 1);
 
     const items = results.length > args.limit ? results.slice(0, -1) : results;
@@ -69,7 +72,7 @@ export const listLedgersByUser: ListLedgersByUser = async (args) => {
     return {
       hasMore: results.length > args.limit,
       items: items
-        .map((i) => i.ledgers)
+        .map((i) => i.ledger)
         .filter((i) => {
           if (i === null)
             console.warn(
@@ -83,9 +86,9 @@ export const listLedgersByUser: ListLedgersByUser = async (args) => {
   const results = await db
     .select()
     .from(userLedgerJunction)
-    .leftJoin(ledgers, eq(userLedgerJunction.ledgerId, ledgers.id))
+    .leftJoin(ledger, eq(userLedgerJunction.ledgerId, ledger.id))
     .where(eq(userLedgerJunction.userId, args.userId))
-    .orderBy(desc(ledgers.updatedAt), asc(ledgers.id))
+    .orderBy(desc(ledger.updatedAt), asc(ledger.id))
     .limit(args.limit + 1);
 
   const items = results.length > args.limit ? results.slice(0, -1) : results;
@@ -93,7 +96,7 @@ export const listLedgersByUser: ListLedgersByUser = async (args) => {
   return {
     hasMore: results.length > args.limit,
     items: items
-      .map((i) => i.ledgers)
+      .map((i) => i.ledger)
       .filter((i) => {
         if (i === null)
           console.warn(
@@ -114,7 +117,7 @@ export const getLedgerByUser: GetLedgerByUser = async (args) => {
     await db
       .select()
       .from(userLedgerJunction)
-      .leftJoin(ledgers, eq(userLedgerJunction.ledgerId, ledgers.id))
+      .leftJoin(ledger, eq(userLedgerJunction.ledgerId, ledger.id))
       .where(
         and(
           eq(userLedgerJunction.userId, args.userId),
@@ -123,7 +126,7 @@ export const getLedgerByUser: GetLedgerByUser = async (args) => {
       )
   )[0];
 
-  if (!result?.ledgers) return null;
+  if (!result?.ledger) return null;
 
-  return result.ledgers;
+  return result.ledger;
 };

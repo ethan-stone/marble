@@ -11,7 +11,7 @@ import {
 /**
  * Ledgers are an abstract organization of accounts transactions
  */
-export const ledgers = mysqlTable("ledger", {
+export const ledger = mysqlTable("ledger", {
   id: varchar("id", { length: 36 }).primaryKey(),
   ownerId: varchar("owner_id", { length: 36 }).notNull(),
   name: text("name").notNull(),
@@ -19,13 +19,13 @@ export const ledgers = mysqlTable("ledger", {
   updatedAt: datetime("updated_at", { mode: "string", fsp: 3 }).notNull(),
 });
 
-export type Ledger = InferModel<typeof ledgers>;
-export type NewLedger = InferModel<typeof ledgers, "insert">;
+export type Ledger = InferModel<typeof ledger>;
+export type NewLedger = InferModel<typeof ledger, "insert">;
 
 /**
  * Journals are a list of transactions between two or more accounts
  */
-export const journals = mysqlTable("journal", {
+export const journal = mysqlTable("journal", {
   id: varchar("id", { length: 36 }).primaryKey(),
   ledgerId: varchar("ledger_id", { length: 36 }), // the ledger this journal is a part of
   name: text("name").notNull(),
@@ -36,10 +36,11 @@ export const journals = mysqlTable("journal", {
 /**
  * Journal Entries are a specific entry in a journal
  */
-
 export const journalEntry = mysqlTable("journal_entry", {
   id: varchar("id", { length: 36 }).primaryKey(),
   creatorId: varchar("creator_id", { length: 36 }),
+  description: text("description").notNull(),
+  createdAt: datetime("created_at", { mode: "string", fsp: 3 }).notNull(),
 });
 
 /**
@@ -48,7 +49,7 @@ export const journalEntry = mysqlTable("journal_entry", {
  * owe you their portion, you and the other person are users, and Five Guys is
  * the 3rdparty
  */
-export const accounts = mysqlTable("account", {
+export const account = mysqlTable("account", {
   id: varchar("id", { length: 36 }).primaryKey(),
   type: mysqlEnum("type", ["3rdparty", "user"]),
 });
