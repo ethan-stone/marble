@@ -4,8 +4,8 @@ import {
   text,
   varchar,
   primaryKey,
-  datetime,
   mysqlEnum,
+  bigint,
 } from "drizzle-orm/mysql-core";
 
 /**
@@ -15,8 +15,8 @@ export const ledger = mysqlTable("ledger", {
   id: varchar("id", { length: 36 }).primaryKey(),
   ownerId: varchar("owner_id", { length: 36 }).notNull(),
   name: text("name").notNull(),
-  createdAt: datetime("created_at", { mode: "string", fsp: 3 }).notNull(),
-  updatedAt: datetime("updated_at", { mode: "string", fsp: 3 }).notNull(),
+  createdAt: bigint("created_at", { mode: "number" }).notNull(),
+  updatedAt: bigint("updated_at", { mode: "number" }).notNull(),
 });
 
 export type Ledger = InferModel<typeof ledger>;
@@ -29,8 +29,8 @@ export const journal = mysqlTable("journal", {
   id: varchar("id", { length: 36 }).primaryKey(),
   ledgerId: varchar("ledger_id", { length: 36 }), // the ledger this journal is a part of
   name: text("name").notNull(),
-  createdAt: datetime("created_at", { mode: "string", fsp: 3 }).notNull(),
-  updatedAt: datetime("updated_at", { mode: "string", fsp: 3 }).notNull(),
+  createdAt: bigint("created_at", { mode: "number" }).notNull(),
+  updatedAt: bigint("updated_at", { mode: "number" }).notNull(),
 });
 
 /**
@@ -40,7 +40,7 @@ export const journalEntry = mysqlTable("journal_entry", {
   id: varchar("id", { length: 36 }).primaryKey(),
   creatorId: varchar("creator_id", { length: 36 }),
   description: text("description").notNull(),
-  createdAt: datetime("created_at", { mode: "string", fsp: 3 }).notNull(),
+  createdAt: bigint("created_at", { mode: "number" }).notNull(),
 });
 
 /**
