@@ -6,6 +6,7 @@ import {
   primaryKey,
   mysqlEnum,
   bigint,
+  int,
 } from "drizzle-orm/mysql-core";
 
 /**
@@ -41,6 +42,14 @@ export const journalEntry = mysqlTable("journal_entry", {
   creatorId: varchar("creator_id", { length: 36 }),
   description: text("description").notNull(),
   createdAt: bigint("created_at", { mode: "number" }).notNull(),
+});
+
+export const journalEntryItem = mysqlTable("journal_entry_item", {
+  id: varchar("id", { length: 36 }).primaryKey(),
+  journalId: varchar("journal_id", { length: 36 }).notNull(),
+  accountId: varchar("account_id", { length: 36 }).notNull(),
+  credits: int("credits"),
+  debits: int("debits"),
 });
 
 /**
