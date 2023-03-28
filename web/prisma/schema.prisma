@@ -9,3 +9,42 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Ledger {
+  id        String   @id @default(cuid())
+  ownerId   String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ledgerItems LedgerEntry[]
+}
+
+model LedgerEntry {
+  id          String   @id @default(cuid())
+  ledgerId    String
+  name        String
+  creatorId   String // user id of the user who made this entry
+  purchaserId String // user id of the user who made this purchase for this entry
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  ledger           Ledger            @relation(fields: [ledgerId], references: [id])
+  ledgerEntryItems LedgerEntryItem[]
+}
+
+model LedgerEntryItem {
+  id            String @id @default(cuid())
+  ledgerEntryId String
+  name          String
+  userId        String
+
+  ledgerEntry LedgerEntry @relation(fields: [ledgerEntryId], references: [id])
+}
+
+model UserLedgerJunction {
+  ledgerId String
+  userId   String
+
+  @@id([userId, ledgerId])
+}
