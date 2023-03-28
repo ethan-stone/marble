@@ -20,14 +20,22 @@ model Ledger {
   ledgerItems LedgerEntry[]
 }
 
+enum LedgerEntryKind {
+  one_time
+  recurring
+}
+
 model LedgerEntry {
-  id          String   @id @default(cuid())
+  id          String          @id @default(cuid())
   ledgerId    String
   name        String
-  creatorId   String // user id of the user who made this entry
-  purchaserId String // user id of the user who made this purchase for this entry
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  creatorId   String // id of the user who made this entry
+  purchaserId String // id of the user who made this purchase for this entry
+  kind        LedgerEntryKind
+  oneTime     Json?
+  recurring   Json?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   ledger           Ledger            @relation(fields: [ledgerId], references: [id])
   ledgerEntryItems LedgerEntryItem[]
