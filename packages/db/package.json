@@ -1,0 +1,18 @@
+{
+  "name": "@marble/db",
+  "version": "0.0.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push --skip-generate",
+    "dev": "prisma studio --port 5556"
+  },
+  "dependencies": {
+    "@prisma/client": "^4.12.0"
+  },
+  "devDependencies": {
+    "prisma": "^4.12.0"
+  }
+}

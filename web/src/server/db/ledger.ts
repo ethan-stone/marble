@@ -1,29 +1,15 @@
-import { db } from "@/server/db/client";
 import {
   ledger,
   type NewLedger,
   type Ledger,
   userLedgerJunction,
 } from "@/server/db/schema";
-import { and, asc, desc, eq, gt, lt, or } from "drizzle-orm/expressions";
 import { uid } from "@/utils/uid";
 
 export type InsertLedgerFn = (args: Omit<NewLedger, "id">) => Promise<Ledger>;
 
 export const insertLedger: InsertLedgerFn = async (args) => {
   const id = uid();
-
-  await db.insert(ledger).values({
-    ...args,
-    id,
-  });
-
-  const newLedger = (
-    await db.select().from(ledger).where(eq(ledger.id, id))
-  )[0];
-
-  if (!newLedger)
-    throw new Error(`Unexpected error retrieving inserted ledger`);
 
   return newLedger;
 };

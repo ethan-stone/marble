@@ -1,16 +1,14 @@
-import { drizzle } from "drizzle-orm/planetscale-serverless";
-import { connect } from "@planetscale/database";
-import { env } from "@/env.mjs";
-import { fetch } from "undici";
+import { PrismaClient } from "@marble/db";
 
-// create the connection
-const connection = connect({
-  fetch,
-  host: process.env["DATABASE_HOST"],
-  username: process.env["DATABASE_USERNAME"],
-  password: process.env["DATABASE_PASSWORD"],
-});
+const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
-export const db = drizzle(connection, {
-  logger: env.NODE_ENV !== "production",
-});
+export const prisma =
+  globalForPrisma.prisma ||
+  new PrismaClient({
+    log:
+      process.env.NODE_ENV === "development"
+        ? ["query", "error", "warn"]
+        : ["error"],
+  });
+
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
