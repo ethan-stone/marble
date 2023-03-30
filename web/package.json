@@ -7,8 +7,7 @@
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
-    "db:generate": "drizzle-kit generate:mysql",
-    "db:push": "drizzle-kit push:mysql"
+    "test": "vitest run --coverage"
   },
   "dependencies": {
     "@clerk/nextjs": "^4.11.7",
@@ -27,6 +26,7 @@
     "zod": "^3.20.6"
   },
   "devDependencies": {
+    "@types/dockerode": "^3.3.16",
     "@types/eslint": "^8.21.1",
     "@types/node": "^18.14.0",
     "@types/prettier": "^2.7.2",
@@ -35,6 +35,7 @@
     "@typescript-eslint/eslint-plugin": "^5.53.0",
     "@typescript-eslint/parser": "^5.53.0",
     "autoprefixer": "^10.4.7",
+    "dockerode": "^3.3.5",
     "dotenv": "^16.0.3",
     "eslint": "^8.34.0",
     "eslint-config-next": "^13.2.1",
@@ -42,7 +43,8 @@
     "prettier": "^2.8.1",
     "prettier-plugin-tailwindcss": "^0.2.1",
     "tailwindcss": "^3.2.0",
-    "typescript": "^4.9.5"
+    "typescript": "^4.9.5",
+    "vitest": "^0.29.8"
   },
   "ct3aMetadata": {
     "initVersion": "7.6.0"
