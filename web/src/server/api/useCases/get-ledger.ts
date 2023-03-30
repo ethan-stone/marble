@@ -1,8 +1,12 @@
-import { getLedgerByUser } from "@/server/db/ledger";
+import { type ILedgerRepo } from "@marble/db";
 
 type Args = {
   ledgerId: string;
   userId: string;
+};
+
+type Ctx = {
+  ledgerRepo: ILedgerRepo;
 };
 
 export class LedgerNotFoundError extends Error {
@@ -11,8 +15,8 @@ export class LedgerNotFoundError extends Error {
   }
 }
 
-export async function getLedger(args: Args) {
-  const ledger = await getLedgerByUser(args);
+export async function getLedger(args: Args, ctx: Ctx) {
+  const ledger = await ctx.ledgerRepo.getByUser(args);
 
   if (!ledger) throw new LedgerNotFoundError(args.ledgerId);
 

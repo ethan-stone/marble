@@ -1,4 +1,4 @@
-import { listLedgersByUser } from "@/server/db/ledger";
+import { type ILedgerRepo } from "@marble/db";
 
 type Args = {
   userId: string;
@@ -6,6 +6,10 @@ type Args = {
   startingAfter?: string;
 };
 
-export async function listLedgers(args: Args) {
-  return listLedgersByUser(args);
+type Ctx = {
+  ledgerRepo: ILedgerRepo;
+};
+
+export async function listLedgers(args: Args, ctx: Ctx) {
+  return ctx.ledgerRepo.listByUser(args);
 }

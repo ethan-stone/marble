@@ -20,5 +20,6 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
+  transpilePackages: ["@marble/db"],
 };
 export default config;

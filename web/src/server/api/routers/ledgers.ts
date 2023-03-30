@@ -1,10 +1,10 @@
 import { createTRPCRouter, protectedProcedure } from "@/server/api/trpc";
 import { z } from "zod";
 import { newLedger } from "@/server/api/useCases/new-ledger";
-import { insertLedger } from "@/server/db/ledger";
-import { insertUserLedgerJunction } from "@/server/db/user-ledger-junction";
 import { listLedgers } from "@/server/api/useCases/list-ledgers";
 import { getLedger } from "@/server/api/useCases/get-ledger";
+import { ledgerRepo } from "@/server/db/ledgerRepo";
+import { userLedgerJunctionRepo } from "@/server/db/userLedgerJunctionRepo";
 
 export const ledgersRouter = createTRPCRouter({
   newLedger: protectedProcedure
@@ -16,8 +16,8 @@ export const ledgersRouter = createTRPCRouter({
           userId: ctx.auth.userId,
         },
         {
-          insertLedger,
-          insertUserLedgerJunction,
+          ledgerRepo,
+          userLedgerJunctionRepo,
         }
       );
     }),
@@ -30,11 +30,16 @@ export const ledgersRouter = createTRPCRouter({
       })
     )
     .query(async ({ input, ctx }) => {
-      return listLedgers({
-        userId: ctx.auth.userId,
-        limit: input.limit,
-        startingAfter: input.cursor,
-      });
+      return listLedgers(
+        {
+          userId: ctx.auth.userId,
+          limit: input.limit,
+          startingAfter: input.cursor,
+        },
+        {
+          ledgerRepo,
+        }
+      );
     }),
 
   getLedger: protectedProcedure
@@ -44,9 +49,14 @@ export const ledgersRouter = createTRPCRouter({
       })
     )
     .query(async ({ input, ctx }) => {
-      return getLedger({
-        ledgerId: input.ledgerId,
-        userId: ctx.auth.userId,
-      });
+      return getLedger(
+        {
+          ledgerId: input.ledgerId,
+          userId: ctx.auth.userId,
+        },
+        {
+          ledgerRepo,
+        }
+      );
     }),
 });

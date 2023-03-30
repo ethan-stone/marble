@@ -18,7 +18,8 @@ model Ledger {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  ledgerItems LedgerEntry[]
+  ledgerItems        LedgerEntry[]
+  UserLedgerJunction UserLedgerJunction[]
 }
 
 enum LedgerEntryKind {
@@ -59,5 +60,8 @@ model UserLedgerJunction {
   ledgerId String
   userId   String
 
+  ledger Ledger @relation(fields: [ledgerId], references: [id])
+
   @@id([userId, ledgerId])
+  @@index([ledgerId])
 }

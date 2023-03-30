@@ -1,5 +1,4 @@
-import { type InsertLedgerFn } from "@/server/db/ledger";
-import { type InsertUserLedgerJunction } from "@/server/db/user-ledger-junction";
+import { type ILedgerRepo, type IUserLedgerJunctionRepo } from "@marble/db";
 
 type Args = {
   userId: string;
@@ -7,20 +6,21 @@ type Args = {
 };
 
 type Ctx = {
-  insertLedger: InsertLedgerFn;
-  insertUserLedgerJunction: InsertUserLedgerJunction;
+  ledgerRepo: ILedgerRepo;
+  userLedgerJunctionRepo: IUserLedgerJunctionRepo;
 };
 
 export async function newLedger(args: Args, ctx: Ctx) {
   const now = new Date();
-  const ledger = await ctx.insertLedger({
+
+  const ledger = await ctx.ledgerRepo.insert({
     name: args.name,
     ownerId: args.userId,
-    createdAt: now.getTime(),
-    updatedAt: now.getTime(),
+    createdAt: now,
+    updatedAt: now,
   });
 
-  await ctx.insertUserLedgerJunction({
+  await ctx.userLedgerJunctionRepo.insert({
     ledgerId: ledger.id,
     userId: args.userId,
   });
