@@ -1,3 +1,4 @@
+import { listLedgers } from "@/server/api/useCases/list-ledgers";
 import { newLedger } from "@/server/api/useCases/new-ledger";
 import { uid } from "@/utils/uid";
 import {
@@ -6,6 +7,7 @@ import {
   LedgerRepo,
   PrismaClient,
   UserLedgerJunctionRepo,
+  type Ledger,
 } from "@marble/db";
 import { describe, beforeEach, beforeAll, it, afterAll, expect } from "vitest";
 
@@ -16,7 +18,7 @@ interface Context {
   userId: string;
 }
 
-describe("new-ledger use case", () => {
+describe("list-ledgers use case", () => {
   const connectionString = `mysql://root@localhost:3306/marble`;
   const userId = uid();
 
@@ -45,12 +47,12 @@ describe("new-ledger use case", () => {
     ctx.userId = userId;
   });
 
-  it<Context>("should successfully create 10 ledgers and 10 userLedgerJunctions", async (ctx) => {
+  it<Context>("should successfully create 10 ledgers and 10 userLedgerJunctions and then list all of them", async (ctx) => {
     for (let i = 0; i < 10; i++) {
       const ledger = await newLedger(
         {
           name: "My Ledger",
-          userId,
+          userId: ctx.userId,
         },
         {
           ledgerRepo: ctx.ledgerRepo,
@@ -61,6 +63,32 @@ describe("new-ledger use case", () => {
       expect(ledger.ownerId).toBe(userId);
       expect(ledger.name).toBe("My Ledger");
     }
+
+    let startingAfter: string | undefined = undefined;
+    let ledgers: Ledger[] = [];
+
+    while (true) {
+      const results: {
+        hasMore: boolean;
+        items: Ledger[];
+      } = await listLedgers(
+        {
+          startingAfter,
+          limit: 5,
+          userId: ctx.userId,
+        },
+        {
+          ledgerRepo: ctx.ledgerRepo,
+        }
+      );
+
+      ledgers = ledgers.concat(results.items);
+      startingAfter = results.items[results.items.length - 1]?.id;
+
+      if (!results.hasMore) break;
+    }
+
+    expect(ledgers.length).toBe(10);
   });
 
   afterAll(async () => {

@@ -7,7 +7,9 @@
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
-    "test": "vitest run --coverage"
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "test": "npm run docker:up && ./scripts/wait-for-it.sh 127.0.0.1:3306 && prisma db push --schema ../packages/db/prisma/schema.prisma && vitest run --coverage"
   },
   "dependencies": {
     "@clerk/nextjs": "^4.11.7",
