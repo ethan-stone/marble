@@ -1,4 +1,24 @@
-import { Ledger, PrismaClient } from "@prisma/client";
+import { Collection, Filter, MongoClient } from "mongodb";
+import { uid } from "./utils/uid";
+import { Overwrite } from "./utils/helpers";
+
+export type Ledger = {
+  id: string;
+  ownerId: string;
+  name: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type DbLedger = Omit<
+  Overwrite<
+    Ledger,
+    {
+      _id: string;
+    }
+  >,
+  "id"
+>;
 
 export interface ILedgerRepo {
   insert(ledger: Omit<Ledger, "id">): Promise<Ledger>;
@@ -14,12 +34,54 @@ export interface ILedgerRepo {
 }
 
 export class LedgerRepo implements ILedgerRepo {
-  constructor(private db: PrismaClient) {}
+  private coll: Collection<DbLedger>;
+
+  constructor(private db: MongoClient) {
+    this.coll = this.db.db().collection<DbLedger>("ledger");
+  }
+
+  private getUid(): string {
+    return uid({ prefix: "le" });
+  }
+
+  private fromDbToDomain(dbLedger: DbLedger): Ledger {
+    return {
+      id: dbLedger._id,
+      ownerId: dbLedger.ownerId,
+      name: dbLedger.name,
+      createdAt: dbLedger.createdAt,
+      updatedAt: dbLedger.updatedAt,
+    };
+  }
+
+  private fromDomainToDb(ledger: Ledger): DbLedger {
+    return {
+      _id: ledger.id,
+      ownerId: ledger.ownerId,
+      name: ledger.name,
+      createdAt: ledger.createdAt,
+      updatedAt: ledger.updatedAt,
+    };
+  }
 
   async insert(ledger: Omit<Ledger, "id">): Promise<Ledger> {
-    return this.db.ledger.create({
-      data: ledger,
+    const _id = this.getUid();
+
+    await this.coll.insertOne({
+      _id,
+      ...ledger,
     });
+
+    const res = await this.coll.findOne({
+      _id,
+    });
+
+    if (!res)
+      throw new Error(
+        `Could not find ledger with id: ${_id} after inserting. This should never happen`
+      );
+
+    return this.fromDbToDomain(res);
   }
 
   async listByUser(args: {
@@ -31,10 +93,8 @@ export class LedgerRepo implements ILedgerRepo {
     items: Ledger[];
   }> {
     if (args.startingAfter) {
-      const startingAfterItem = await this.db.ledger.findFirst({
-        where: {
-          id: args.startingAfter,
-        },
+      const startingAfterItem = await this.coll.findOne({
+        _id: args.startingAfter,
       });
 
       if (!startingAfterItem)
@@ -42,95 +102,15 @@ export class LedgerRepo implements ILedgerRepo {
           `Could not find startingAfter item with id: ${args.startingAfter}`
         );
 
-      const results = await this.db.userLedgerJunction.findMany({
-        include: {
-          ledger: true,
-        },
-        where: {
-          AND: [
-            {
-              userId: args.userId,
-            },
-            {
-              OR: [
-                {
-                  ledger: {
-                    updatedAt: {
-                      lt: startingAfterItem.updatedAt,
-                    },
-                  },
-                },
-                {
-                  AND: [
-                    {
-                      ledger: {
-                        updatedAt: startingAfterItem.updatedAt,
-                      },
-                    },
-                    {
-                      ledger: {
-                        id: {
-                          gt: startingAfterItem.id,
-                        },
-                      },
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-        orderBy: [
-          {
-            ledger: {
-              updatedAt: "desc",
-            },
-          },
-          {
-            ledger: {
-              id: "asc",
-            },
-          },
-        ],
-        take: args.limit + 1,
-      });
-
-      const items =
-        results.length > args.limit ? results.slice(0, -1) : results;
-
       return {
-        hasMore: results.length > args.limit,
-        items: items.map((i) => i.ledger),
+        hasMore: false,
+        items: [],
       };
     }
 
-    const results = await this.db.userLedgerJunction.findMany({
-      include: {
-        ledger: true,
-      },
-      where: {
-        userId: args.userId,
-      },
-      orderBy: [
-        {
-          ledger: {
-            updatedAt: "desc",
-          },
-        },
-        {
-          ledger: {
-            id: "asc",
-          },
-        },
-      ],
-      take: args.limit + 1,
-    });
-
-    const items = results.length > args.limit ? results.slice(0, -1) : results;
-
     return {
-      hasMore: results.length > args.limit,
-      items: items.map((i) => i.ledger),
+      hasMore: false,
+      items: [],
     };
   }
 
@@ -138,18 +118,6 @@ export class LedgerRepo implements ILedgerRepo {
     userId: string;
     ledgerId: string;
   }): Promise<Ledger | null> {
-    const result = await this.db.userLedgerJunction.findFirst({
-      include: {
-        ledger: true,
-      },
-      where: {
-        AND: {
-          userId: args.userId,
-          ledgerId: args.ledgerId,
-        },
-      },
-    });
-
-    return result && result.ledger;
+    return null;
   }
 }

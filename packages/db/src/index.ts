@@ -1,6 +1,7 @@
-export { type ILedgerRepo, LedgerRepo } from "./ledger";
+export { type ILedgerRepo, LedgerRepo, type Ledger } from "./ledger";
 export {
   type IUserLedgerJunctionRepo,
   UserLedgerJunctionRepo,
+  type UserLedgerJunction,
 } from "./userLedgerJunction";
-export * from "@prisma/client";
+export * from "mongodb";

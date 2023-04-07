@@ -42,3 +42,5 @@ yarn-error.log*
 *.tsbuildinfo
 
 drizzle.config.json
+
+mongodb-data

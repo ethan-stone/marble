@@ -1,4 +1,4 @@
 import { LedgerRepo } from "@marble/db";
-import { prisma } from "./client";
+import { mongoClient } from "./client";
 
-export const ledgerRepo = new LedgerRepo(prisma);
+export const ledgerRepo = new LedgerRepo(mongoClient);
