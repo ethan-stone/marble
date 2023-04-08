@@ -1,5 +1,4 @@
 import { Collection, Filter, MongoClient } from "mongodb";
-import { uid } from "./utils/uid";
 import { Overwrite } from "./utils/helpers";
 import { DbUserLedgerJunction } from "./userLedgerJunction";
 
@@ -38,15 +37,18 @@ export class LedgerRepo implements ILedgerRepo {
   private ledger: Collection<DbLedger>;
   private userLedgerJunction: Collection<DbUserLedgerJunction>;
 
-  constructor(private db: MongoClient) {
-    this.ledger = this.db.db().collection<DbLedger>("ledger");
-    this.userLedgerJunction = this.db
+  constructor(
+    private client: MongoClient,
+    private getUID: (args?: { prefix: string }) => string
+  ) {
+    this.ledger = this.client.db().collection<DbLedger>("ledger");
+    this.userLedgerJunction = this.client
       .db()
       .collection<DbUserLedgerJunction>("userLedgerJunction");
   }
 
-  private getUid(): string {
-    return uid({ prefix: "le" });
+  private getLedgerUID(): string {
+    return this.getUID({ prefix: "le" });
   }
 
   private fromDbToDomain(dbLedger: DbLedger): Ledger {
@@ -70,23 +72,40 @@ export class LedgerRepo implements ILedgerRepo {
   }
 
   async insert(ledger: Omit<Ledger, "id">): Promise<Ledger> {
-    const _id = this.getUid();
+    const session = this.client.startSession();
 
-    await this.ledger.insertOne({
+    const _id = this.getLedgerUID();
+
+    await session.withTransaction(
+      async () => {
+        await this.ledger.insertOne(
+          {
+            _id,
+            ...ledger,
+          },
+          { session }
+        );
+
+        await this.userLedgerJunction.insertOne(
+          {
+            _id: this.getUID(),
+            userId: ledger.ownerId,
+            ledgerId: _id,
+          },
+          { session }
+        );
+      },
+      {
+        readPreference: "primary",
+        readConcern: { level: "local" },
+        writeConcern: { w: "majority" },
+      }
+    );
+
+    return this.fromDbToDomain({
       _id,
       ...ledger,
     });
-
-    const res = await this.ledger.findOne({
-      _id,
-    });
-
-    if (!res)
-      throw new Error(
-        `Could not find ledger with id: ${_id} after inserting. This should never happen`
-      );
-
-    return this.fromDbToDomain(res);
   }
 
   async listByUser(args: {
@@ -170,8 +189,6 @@ export class LedgerRepo implements ILedgerRepo {
 
       const results = await cursor.toArray();
 
-      console.log(results);
-
       const items =
         results.length > args.limit ? results.slice(0, -1) : results;
 
@@ -213,8 +230,6 @@ export class LedgerRepo implements ILedgerRepo {
     ]);
 
     const results = await cursor.toArray();
-
-    console.log(results);
 
     const items = results.length > args.limit ? results.slice(0, -1) : results;
 

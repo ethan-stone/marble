@@ -4,7 +4,6 @@ import { newLedger } from "@/server/api/useCases/new-ledger";
 import { listLedgers } from "@/server/api/useCases/list-ledgers";
 import { getLedger } from "@/server/api/useCases/get-ledger";
 import { ledgerRepo } from "@/server/db/ledgerRepo";
-import { userLedgerJunctionRepo } from "@/server/db/userLedgerJunctionRepo";
 
 export const ledgersRouter = createTRPCRouter({
   newLedger: protectedProcedure
@@ -17,7 +16,6 @@ export const ledgersRouter = createTRPCRouter({
         },
         {
           ledgerRepo,
-          userLedgerJunctionRepo,
         }
       );
     }),
