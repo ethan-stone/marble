@@ -1,6 +1,7 @@
 import { Collection, Filter, MongoClient } from "mongodb";
 import { uid } from "./utils/uid";
 import { Overwrite } from "./utils/helpers";
+import { DbUserLedgerJunction } from "./userLedgerJunction";
 
 export type Ledger = {
   id: string;
@@ -34,10 +35,14 @@ export interface ILedgerRepo {
 }
 
 export class LedgerRepo implements ILedgerRepo {
-  private coll: Collection<DbLedger>;
+  private ledger: Collection<DbLedger>;
+  private userLedgerJunction: Collection<DbUserLedgerJunction>;
 
   constructor(private db: MongoClient) {
-    this.coll = this.db.db().collection<DbLedger>("ledger");
+    this.ledger = this.db.db().collection<DbLedger>("ledger");
+    this.userLedgerJunction = this.db
+      .db()
+      .collection<DbUserLedgerJunction>("userLedgerJunction");
   }
 
   private getUid(): string {
@@ -67,12 +72,12 @@ export class LedgerRepo implements ILedgerRepo {
   async insert(ledger: Omit<Ledger, "id">): Promise<Ledger> {
     const _id = this.getUid();
 
-    await this.coll.insertOne({
+    await this.ledger.insertOne({
       _id,
       ...ledger,
     });
 
-    const res = await this.coll.findOne({
+    const res = await this.ledger.findOne({
       _id,
     });
 
@@ -93,7 +98,7 @@ export class LedgerRepo implements ILedgerRepo {
     items: Ledger[];
   }> {
     if (args.startingAfter) {
-      const startingAfterItem = await this.coll.findOne({
+      const startingAfterItem = await this.ledger.findOne({
         _id: args.startingAfter,
       });
 
@@ -102,15 +107,120 @@ export class LedgerRepo implements ILedgerRepo {
           `Could not find startingAfter item with id: ${args.startingAfter}`
         );
 
+      const cursor = this.userLedgerJunction.aggregate<
+        DbUserLedgerJunction & {
+          ledger: DbLedger;
+        }
+      >([
+        {
+          $lookup: {
+            from: "ledger",
+            localField: "ledgerId",
+            foreignField: "_id",
+            as: "ledger",
+          },
+        },
+        {
+          $addFields: {
+            ledger: {
+              $first: "$ledger",
+            },
+          },
+        },
+        {
+          $match: {
+            $and: [
+              {
+                userId: args.userId,
+              },
+              {
+                $or: [
+                  {
+                    "ledger.updatedAt": {
+                      $lt: startingAfterItem.updatedAt,
+                    },
+                  },
+                  {
+                    $and: [
+                      {
+                        "ledger.updatedAt": startingAfterItem.updatedAt,
+                      },
+                      {
+                        "ledger._id": {
+                          $gt: startingAfterItem._id,
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        },
+        {
+          $sort: {
+            "ledger.updatedAt": -1,
+            "ledger._id": 1,
+          },
+        },
+        {
+          $limit: args.limit + 1,
+        },
+      ]);
+
+      const results = await cursor.toArray();
+
+      console.log(results);
+
+      const items =
+        results.length > args.limit ? results.slice(0, -1) : results;
+
       return {
-        hasMore: false,
-        items: [],
+        hasMore: results.length > args.limit,
+        items: items.map((i) => this.fromDbToDomain(i.ledger)),
       };
     }
 
+    const cursor = this.userLedgerJunction.aggregate<
+      DbUserLedgerJunction & {
+        ledger: DbLedger;
+      }
+    >([
+      {
+        $lookup: {
+          from: "ledger",
+          localField: "ledgerId",
+          foreignField: "_id",
+          as: "ledger",
+        },
+      },
+      {
+        $addFields: {
+          ledger: {
+            $first: "$ledger",
+          },
+        },
+      },
+      {
+        $sort: {
+          "ledger.updatedAt": -1,
+          "ledger._id": 1,
+        },
+      },
+      {
+        $limit: args.limit + 1,
+      },
+    ]);
+
+    const results = await cursor.toArray();
+
+    console.log(results);
+
+    const items = results.length > args.limit ? results.slice(0, -1) : results;
+
     return {
-      hasMore: false,
-      items: [],
+      hasMore: results.length > args.limit,
+      items: items.map((i) => this.fromDbToDomain(i.ledger)),
     };
   }
 
@@ -118,6 +228,37 @@ export class LedgerRepo implements ILedgerRepo {
     userId: string;
     ledgerId: string;
   }): Promise<Ledger | null> {
-    return null;
+    const cursor = this.userLedgerJunction.aggregate<
+      DbUserLedgerJunction & {
+        ledger: DbLedger;
+      }
+    >([
+      {
+        $lookup: {
+          from: "ledger",
+          localField: "ledgerId",
+          foreignField: "_id",
+          as: "ledger",
+        },
+      },
+      {
+        $addFields: {
+          ledger: {
+            $first: "$ledger",
+          },
+        },
+      },
+      {
+        $match: {
+          ledgerId: args.ledgerId,
+          userId: args.userId,
+        },
+      },
+    ]);
+
+    // only return the first result because userId and ledgerId are unique
+    const result = (await cursor.toArray())[0];
+
+    return result?.ledger ? this.fromDbToDomain(result.ledger) : null;
   }
 }
