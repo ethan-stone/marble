@@ -1,6 +1,7 @@
 import { Collection, Filter, MongoClient } from "mongodb";
 import { Overwrite } from "./utils/helpers";
 import { DbUserLedgerJunction } from "./userLedgerJunction";
+import { uid } from "./utils/uid";
 
 export type Ledger = {
   id: string;
@@ -36,15 +37,14 @@ export interface ILedgerRepo {
 export class LedgerRepo implements ILedgerRepo {
   private ledger: Collection<DbLedger>;
   private userLedgerJunction: Collection<DbUserLedgerJunction>;
+  private getUID: (args?: { prefix: string }) => string;
 
-  constructor(
-    private client: MongoClient,
-    private getUID: (args?: { prefix: string }) => string
-  ) {
+  constructor(private client: MongoClient) {
     this.ledger = this.client.db().collection<DbLedger>("ledger");
     this.userLedgerJunction = this.client
       .db()
       .collection<DbUserLedgerJunction>("userLedgerJunction");
+    this.getUID = uid;
   }
 
   private getLedgerUID(): string {
