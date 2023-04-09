@@ -4,4 +4,9 @@ export {
   UserLedgerJunctionRepo,
   type UserLedgerJunction,
 } from "./userLedgerJunction";
+export {
+  type ILedgerEntryRepo,
+  LedgerEntryRepo,
+  type LedgerEntry,
+} from "./ledgerEntry";
 export * from "mongodb";

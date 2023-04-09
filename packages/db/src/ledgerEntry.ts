@@ -10,12 +10,12 @@ export type LedgerEntry = {
   purchaserId: string; // id of the user who made the purchase for this entry
   kind: "oneTime" | "recurring";
   oneTime?: {
-    amount: number;
+    amount: number; // amount in lowest denominations of currency
   };
   recurring?: {
-    amount: number;
+    amount: number; // amount in lowest denominations of currency
     frequency: "monthly" | "annually" | "daily";
-    anchor: Date; // the date of the first time this recurring entry should be triggered
+    startAt: Date; // the date of the first time this recurring entry should be triggered
   };
   createdAt: Date;
   updatedAt: Date;
