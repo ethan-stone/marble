@@ -48,7 +48,7 @@ export class LedgerRepo implements ILedgerRepo {
   }
 
   private getLedgerUID(): string {
-    return this.getUID({ prefix: "le" });
+    return this.getUID({ prefix: "ledg" });
   }
 
   private fromDbToDomain(dbLedger: DbLedger): Ledger {
@@ -216,6 +216,11 @@ export class LedgerRepo implements ILedgerRepo {
           ledger: {
             $first: "$ledger",
           },
+        },
+      },
+      {
+        $match: {
+          userId: args.userId,
         },
       },
       {
