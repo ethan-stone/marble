@@ -93,6 +93,7 @@ const Ledgers: NextPage = () => {
                       </Link>
                     );
                   }
+
                   return (
                     <Link
                       key={ledger.id}
