@@ -15,8 +15,6 @@ const Ledger: NextPage = () => {
     }
   );
 
-  console.log(data);
-
   return <div>Hi</div>;
 };
 
