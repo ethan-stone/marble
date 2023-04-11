@@ -3,6 +3,7 @@ import {
   type ILedgerEntryRepo,
   type ILedgerRepo,
 } from "@marble/db";
+import { z } from "zod";
 
 type Args = {
   ledgerId: string;
@@ -41,6 +42,8 @@ export class ValidationError extends Error {
   }
 }
 
+const amountSchema = z.number().int().positive();
+
 export async function newLedgerEntry(
   args: Args,
   ctx: Ctx
@@ -55,23 +58,63 @@ export async function newLedgerEntry(
     throw new LedgerNotFoundError("Could not find the specified ledger");
 
   // validate that based on ledger entry kind the correct data is provided
-  if (args.kind === "oneTime" && !("oneTime" in args)) {
-    throw new ValidationError("Must provide amount if entry kind is One Time");
+  if (args.kind === "oneTime") {
+    if (!args.oneTime) {
+      throw new ValidationError(
+        "Must provide amount if entry kind is One Time"
+      );
+    }
+
+    const errors: string[] = [];
+
+    const parsedAmount = await amountSchema.spa(args.oneTime.amount);
+
+    if (!parsedAmount.success) {
+      errors.push("Amount must be a positive integer");
+    }
+
+    if (errors.length > 0) throw new ValidationError(errors.join(", "));
+
+    const now = new Date();
+
+    return ctx.ledgerEntryRepo.insert({
+      ...args,
+      recurring: undefined,
+      createdAt: now,
+      updatedAt: now,
+    });
   }
 
-  if (args.kind === "recurring" && !("recurring" in args)) {
-    throw new ValidationError(
-      "Must provide amount, frequency, and start date if entry kind is Recurring"
-    );
+  if (args.kind === "recurring") {
+    if (!args.recurring) {
+      throw new ValidationError(
+        "Must provide amount, frequency, and start date if entry kind is Recurring"
+      );
+    }
+
+    const errors: string[] = [];
+
+    const parsedAmount = await amountSchema.spa(args.recurring.amount);
+
+    if (!parsedAmount.success) {
+      errors.push("Amount must be a positive integer");
+    }
+
+    if (args.recurring.startAt < new Date()) {
+      errors.push("Start date must be in the future");
+    }
+
+    if (errors.length > 0) throw new ValidationError(errors.join(", "));
+
+    const now = new Date();
+
+    return ctx.ledgerEntryRepo.insert({
+      ...args,
+      oneTime: undefined,
+      createdAt: now,
+      updatedAt: now,
+    });
   }
 
-  const now = new Date();
-
-  const ledgerEntry = await ctx.ledgerEntryRepo.insert({
-    ...args,
-    createdAt: now,
-    updatedAt: now,
-  });
-
-  return ledgerEntry;
+  throw new ValidationError("Invalid entry kind");
 }
