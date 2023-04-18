@@ -44,8 +44,12 @@ const Ledger: NextPage = () => {
               className="mt-4 rounded border border-neutral-900 p-2"
               onClick={() =>
                 makeNewLedgerEntry({
-                  kind: "oneTime",
-                  oneTime: { amount: 100 },
+                  kind: "recurring",
+                  recurring: {
+                    amount: 100,
+                    frequency: "annually",
+                    startAt: new Date().toISOString(),
+                  },
                   ledgerId: ledger.id,
                   name: "Test Ledger Entry",
                   purchaserId: userId as string,
